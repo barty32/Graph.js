@@ -22,7 +22,7 @@ export interface Point {
     y: number | undefined;
     connect: boolean;
     selected: boolean;
-    debug: number;
+    // debug: number;
 }
 
 export class Graph {
@@ -58,7 +58,7 @@ export class Graph {
         background: '#111',
         controlButtons: true,
         lineWidth: 4,
-        minZoom: 1e-306,
+        minZoom: 1e-300,
         maxZoom: Number.MAX_SAFE_INTEGER,
     }
     prevX = -1;
@@ -517,30 +517,39 @@ export class Graph {
             this.ctx.beginPath();
             this.ctx.strokeStyle = line.color;
             this.ctx.lineWidth = this.options.lineWidth;
-            let prevX = 0;
-            let prevY = 0;
+            //let prevX = line.points[0].x ?? 0;
+            //let prevY = line.points[0].y ?? 0;
 
-            for (const point of line.points) {
-                if (point.x === undefined || point.y === undefined) continue;
+			for (const point of line.points) {//let i = 0; i < line.points.length; i++
+				//const point = line.points[i];
+				if (point.x === undefined || point.y === undefined) continue;
 
-                const x = point.x * this.xScale - this.xOffset;
-                const y = -point.y * this.yScale + this.yOffset;
+                let x = point.x * this.xScale - this.xOffset;
+                let y = -point.y * this.yScale + this.yOffset;
 
-                if (x < -2 || x > this.width + 2 /*|| y < 0 || y > this.height*/) {
-                    continue;
-                }
-                if (!point.selected && ((line.inspectMode == 'x' && Math.abs(prevX - x) < 1) || (line.inspectMode == 'y' && Math.abs(prevY - y) < 1))) {
-                    continue;
-                }
+                // if ((prevX < -2 && x < -2) || x > this.width + 2 /*|| y < 0 || y > this.height*/) {
+				// 	prevX = x;
+				// 	prevY = y;
+				// 	continue;
+                // }
+                // if (!point.selected && ((line.inspectMode == 'x' && Math.abs(prevX - x) < 1) || (line.inspectMode == 'y' && Math.abs(prevY - y) < 1))) {
+                //     continue;
+                // }
 
-                if (point.debug == 1) {
-                    this.ctx.strokeStyle = 'red';
-                    this.ctx.strokeRect(x-2, y-2, 4, 4);
-                    continue;
-                }
-                else {
+				//if number is outside 32-bit limits
+				if (Math.abs(x) > 2.14e9) x = 2.14e9;
+				if (Math.abs(y) > 2.14e9) y = 2.14e9;
+
+                // if (point.debug == 1) {
+                //     this.ctx.strokeStyle = 'red';
+                //     this.ctx.strokeRect(x-2, y-2, 4, 4);
+                //     continue;
+                // }
+                // else {
                     this.ctx.strokeStyle = line.color;
-                }
+                //}
+
+				//console.log(`x: ${x}, y: ${y}`);
 
                 // if ((prevY < 0 || prevY > this.height) && (y < 0 || y > this.height)) {
                 //     continue;
@@ -576,13 +585,13 @@ export class Graph {
                     this.ctx.strokeRect(x, y, 1, 1);
                     continue;
                 }
-                this.ctx.lineTo(x, y);
+				this.ctx.lineTo(x, y);
 
-                prevX = x;
-                prevY = y;
+                // prevX = x;
+                // prevY = y;
                 //console.log(`x: ${x}, y: ${y}`);
             }
-            this.ctx.stroke();
+			this.ctx.stroke();
         }
 
         if (drawLabel) {
@@ -593,6 +602,8 @@ export class Graph {
     private move(x: number, y: number) {
         this.xOffset += -x;
         this.yOffset += y;
+		// this.ctx.translate(x, y);
+		
         this.draw(true);
     }
 
